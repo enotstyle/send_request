@@ -1,2 +1,2 @@
 
-URL = "https://send-request.me/"
+URL = "https://send-request.me/api/companies/"

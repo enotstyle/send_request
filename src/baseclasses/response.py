@@ -6,6 +6,8 @@ class Response:
     def __init__(self, response):
         self.response = response
         self.response_json = response.json().get('data')
+        self.response_json_meta = response.json().get('meta')
+        self.response_body = response.json()
         self.response_status = response.status_code
         self.parsed_object = None
 
@@ -16,7 +18,10 @@ class Response:
                     parsed_object = schema.parse_obj(item)
                     self.parsed_object = parsed_object
             else:
-                schema.parse_obj(self.response_json)
+                if self.response_json:
+                    schema.parse_obj(self.response_json)
+                else:
+                    schema.parse_obj(self.response_body)
         except ValidationError:
             raise AssertionError(
                 "Could not map received object to pydantic schema"
