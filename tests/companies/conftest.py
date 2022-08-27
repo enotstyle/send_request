@@ -12,4 +12,5 @@ WRONG_PARAMETERS = [
 
 @pytest.fixture
 def get_link():
-    return URL
+    company_url = URL + "companies/"
+    return company_url

@@ -10,4 +10,5 @@ class Company(BaseModel):
     company_name: str
     company_address: str
     company_status: Status
-    description_lang: list
+    description_lang: Optional[list]
+    description: Optional[str]

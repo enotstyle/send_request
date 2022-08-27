@@ -5,29 +5,30 @@ class Response:
 
     def __init__(self, response):
         self.response = response
-        self.response_json = response.json().get('data')
-        self.response_json_meta = response.json().get('meta')
-        self.response_body = response.json()
+        self.response_json_data = None
+        self.response_json_meta = None
         self.response_status = response.status_code
         self.parsed_object = None
 
+        if self.response.json().get('data'):
+            self.response_json_data = response.json().get('data')
+        else:
+            self.response_json_data = response.json()
+        if self.response.json().get('meta'):
+            self.response_json_meta = response.json().get('meta')
+
     def validate(self, schema):
         try:
-            if isinstance(self.response_json, list):
-                for item in self.response_json:
+            if isinstance(self.response_json_data, list):
+                for item in self.response_json_data:
                     parsed_object = schema.parse_obj(item)
                     self.parsed_object = parsed_object
             else:
-                if self.response_json:
-                    schema.parse_obj(self.response_json)
-                else:
-                    schema.parse_obj(self.response_body)
+                schema.parse_obj(self.response_json_data)
         except ValidationError:
             raise AssertionError(
                 "Could not map received object to pydantic schema"
             )
-
-    ##валидация статуса епта
 
     def asser_status_code(self, status_code):
         """
@@ -43,6 +44,15 @@ class Response:
 
     def get_parsed_object(self):
         return self.parsed_object
+
+
+    def get_object_with_param(self, param):
+        for i in self.response_json_data:
+            item_list = []
+            if param in i.value():
+                item_list.append(i)
+
+            return item_list
 
     def __str__(self):
         """

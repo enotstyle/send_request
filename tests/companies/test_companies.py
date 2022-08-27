@@ -10,7 +10,7 @@ import requests
 import pytest
 
 from send_request.src.baseclasses.response import Response
-from send_request.src.schemas.company import Company
+from send_request.src.schemas.companies import Company
 from send_request.src.schemas.project import Meta
 from send_request.src.enums.company_enums import Status
 from send_request.tests.companies.conftest import TEST_COMPANY_ID, WRONG_PARAMETERS
@@ -29,7 +29,7 @@ def test_filters(get_link, status):
     link = get_link + f"?status={status}"
     r = requests.get(link)
     response = Response(r)
-    for i in response.response_json:
+    for i in response.response_json_data:
         company = Company.parse_obj(i)
         status_compony = company.company_status.value
         assert status_compony == status, \
@@ -55,8 +55,8 @@ def test_meta_filters(get_link, limit, offset):
     assert response_limit == limit, f'Получен лимит {response_limit}, ожидается лимит {limit}'
     assert response_offset == offset, f"Получен оффсет {response_offset}, ожидается оффсет {offset}"
 
-    assert len(response.response_json) == limit, \
-        f'Получено количество компаний {len(response.response_json)}, при лимите {limit}'
+    assert len(response.response_json_data) == limit, \
+        f'Получено количество компаний {len(response.response_json_data)}, при лимите {limit}'
 
 
 """
@@ -83,17 +83,20 @@ def test_single_company_negative(get_link, company_id):
     response = Response(r)
     response.asser_status_code(300).validate(Company)
 
-# НЕ ГОТОВ!
+
 # Делаем запрос с Accept-Language хедером, передав доступную локализацию. (Учитывайте негативные кейсы)
 @pytest.mark.parametrize('lang', [
-    "en-us",
-    'en'
+    "EN",
+    "RU",
+    "PL",
+    "UA"
 ])
-def test_request_with_lang(get_link, lang):
-    headers = {"Content-Type": "text"}
+def test_request_with_lang(lang, get_link):
+    headers = {"Accept-Language": lang}
     link = get_link + str(TEST_COMPANY_ID)
     r = requests.get(url=link, headers=headers)
-    print(r.headers)
-    response = Response(r).asser_status_code(200)
-    pars = Company.parse_obj(response.response_body)
+    response = Response(r)
+    pars = Company.parse_obj(response.response_json_data)
     print(pars)
+
+
